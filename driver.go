@@ -36,12 +36,7 @@ func (d ipfsDriver) Create(r volume.Request) volume.Response {
 		return volume.Response{}
 	}
 
-	hash, ok := r.Options["hash"]
-	if !ok {
-		return volume.Response{Err: "Cannot find 'hash' option"}
-	}
-
-	volumePath := filepath.Join(d.mountPoint, hash)
+	volumePath := filepath.Join(d.mountPoint, volumeName)
 
 	_, err := os.Lstat(volumePath)
 	if err != nil {
