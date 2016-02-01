@@ -4,7 +4,8 @@ This is an open source volume plugin that allows using an
 [ipfs](https://ipfs.io/) filesystem as a volume.
 
 ```bash
-docker run -it --rm -v QmPXME1oRtoT627YKaDPDQ3PwA8tdP9rWuAAweLzqSwAWT/readme:/data --volume-driver=ipfs busybox cat data
+$ docker-volume-ipfs &
+$ docker run -it --rm -v QmPXME1oRtoT627YKaDPDQ3PwA8tdP9rWuAAweLzqSwAWT/readme:/data --volume-driver=ipfs busybox cat data
 Hello and Welcome to IPFS!
 
 ██╗██████╗ ███████╗███████╗
