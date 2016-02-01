@@ -91,3 +91,26 @@ func (d ipfsDriver) Unmount(r volume.Request) volume.Response {
 	fmt.Printf("Unmount %v: nothing to do\n", r)
 	return volume.Response{}
 }
+
+func (d ipfsDriver) Get(r volume.Request) volume.Response {
+	fmt.Printf("Get %v\n", r)
+	volumeName := r.Name
+
+	if volumePath, ok := d.volumes[volumeName]; ok {
+		return volume.Response{Volume: &volume.Volume{Name: volumeName, Mountpoint: volumePath}}
+	}
+
+	return volume.Response{Err: fmt.Sprintf("volume %s does not exists", volumeName)}
+}
+
+func (d ipfsDriver) List(r volume.Request) volume.Response {
+	fmt.Printf("List %v\n", r)
+
+	volumes := []*volume.Volume{}
+
+	for name, path := range d.volumes {
+		volumes = append(volumes, &volume.Volume{Name: name, Mountpoint: path})
+	}
+
+	return volume.Response{Volumes: volumes}
+}
