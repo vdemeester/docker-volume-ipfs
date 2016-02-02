@@ -10,16 +10,18 @@ import (
 )
 
 type ipfsDriver struct {
-	mountPoint string
-	volumes    map[string]string
-	m          *sync.Mutex
+	ipfsMountPoint string
+	ipnsMountPoint string
+	volumes        map[string]string
+	m              *sync.Mutex
 }
 
-func newIPFSDriver(ipfsMountPoint string) ipfsDriver {
+func newIPFSDriver(ipfsMountPoint, ipnsMountPoint string) ipfsDriver {
 	d := ipfsDriver{
-		mountPoint: ipfsMountPoint,
-		volumes:    make(map[string]string),
-		m:          &sync.Mutex{},
+		ipfsMountPoint: ipfsMountPoint,
+		ipnsMountPoint: ipnsMountPoint,
+		volumes:        make(map[string]string),
+		m:              &sync.Mutex{},
 	}
 	return d
 }
@@ -36,7 +38,7 @@ func (d ipfsDriver) Create(r volume.Request) volume.Response {
 		return volume.Response{}
 	}
 
-	volumePath := filepath.Join(d.mountPoint, volumeName)
+	volumePath := filepath.Join(d.ipfsMountPoint, volumeName)
 
 	_, err := os.Lstat(volumePath)
 	if err != nil {
