@@ -12,5 +12,8 @@ services:
 notifications:
   email: false
 
+install:
+  - make setup
+
 script:
   - make ci
