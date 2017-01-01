@@ -9,12 +9,14 @@ import (
 	"github.com/docker/go-plugins-helpers/volume"
 )
 
+// IPFS represent the IPFS volume driver
 type IPFS struct {
 	mountPoint string
 	volumes    map[string]string
 	m          *sync.Mutex
 }
 
+// New create an IPFS driver
 func New(ipfsMountPoint string) IPFS {
 	d := IPFS{
 		mountPoint: ipfsMountPoint,
@@ -24,6 +26,7 @@ func New(ipfsMountPoint string) IPFS {
 	return d
 }
 
+// Create implements /VolumeDriver.Create
 func (d IPFS) Create(r volume.Request) volume.Response {
 	fmt.Printf("Create %v\n", r)
 
@@ -49,6 +52,7 @@ func (d IPFS) Create(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
+// Path implements /VolumeDriver.Path
 func (d IPFS) Path(r volume.Request) volume.Response {
 	fmt.Printf("Path %v\n", r)
 	fmt.Printf("%v", d.volumes)
@@ -61,6 +65,7 @@ func (d IPFS) Path(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
+// Remove implements /VolumeDriver.Remove
 func (d IPFS) Remove(r volume.Request) volume.Response {
 	fmt.Printf("Remove %v", r)
 
@@ -76,6 +81,7 @@ func (d IPFS) Remove(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
+// Mount implements /VolumeDriver.Mount
 func (d IPFS) Mount(r volume.MountRequest) volume.Response {
 	fmt.Printf("Mount %v\n", r)
 	volumeName := r.Name
@@ -87,11 +93,13 @@ func (d IPFS) Mount(r volume.MountRequest) volume.Response {
 	return volume.Response{}
 }
 
+// Unmount implements /VolumeDriver.Mount
 func (d IPFS) Unmount(r volume.UnmountRequest) volume.Response {
 	fmt.Printf("Unmount %v: nothing to do\n", r)
 	return volume.Response{}
 }
 
+// Get implements /VolumeDriver.Get
 func (d IPFS) Get(r volume.Request) volume.Response {
 	fmt.Printf("Get %v\n", r)
 	volumeName := r.Name
@@ -103,6 +111,7 @@ func (d IPFS) Get(r volume.Request) volume.Response {
 	return volume.Response{Err: fmt.Sprintf("volume %s does not exists", volumeName)}
 }
 
+// List implements /VolumeDriver.List
 func (d IPFS) List(r volume.Request) volume.Response {
 	fmt.Printf("List %v\n", r)
 
@@ -115,6 +124,7 @@ func (d IPFS) List(r volume.Request) volume.Response {
 	return volume.Response{Volumes: volumes}
 }
 
+// Capabilities implements /VolumeDriver.Capabilities
 func (d IPFS) Capabilities(r volume.Request) volume.Response {
 	// FIXME(vdemeester) handle capabilities better
 	return volume.Response{
