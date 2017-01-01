@@ -1,51 +1,112 @@
-.PHONY: all binary build clean install install-binary man shell test-integration
+# Root directory of the project (absolute path).
+ROOTDIR=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-export GO15VENDOREXPERIMENT=1
+# Base path used to install.
+DESTDIR=/usr/local
 
-PREFIX ?= ${DESTDIR}/usr
-INSTALLDIR=${PREFIX}/bin
-MANINSTALLDIR=${PREFIX}/share/man
+# Used to populate version variable in main package.
+VERSION=$(shell git describe --match 'v[0-9]*' --dirty='.m' --always)
 
-GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
-DOCKER_IMAGE := dvipfs-dev$(if $(GIT_BRANCH),:$(GIT_BRANCH))
-# set env like gobuildtag?
-DOCKER_FLAGS := docker run --rm -i #$(DOCKER_ENVS)
-# if this session isn't interactive, then we don't want to allocate a
-# TTY, which would fail, but if it is interactive, we do want to attach
-# so that the user can send e.g. ^C through.
-INTERACTIVE := $(shell [ -t 0 ] && echo 1 || echo 0)
-ifeq ($(INTERACTIVE), 1)
-	DOCKER_FLAGS += -t
-endif
-DOCKER_RUN_DOCKER := $(DOCKER_FLAGS) "$(DOCKER_IMAGE)"
+PROJECT_ROOT=github.com/vdemeester/docker-volume-ipfs
 
-all: man binary
+# Race detector is only supported on amd64.
+RACE := $(shell test $$(go env GOARCH) != "amd64" || (echo "-race"))
 
-binary:
-	go build -o ${DEST}docker-volume-ipfs .
+# Project packages.
+PACKAGES=$(shell go list ./... | grep -v /vendor/)
+INTEGRATION_PACKAGE=${PROJECT_ROOT}/integration
 
-build-container:
-	docker build ${DOCKER_BUILD_ARGS} -t "$(DOCKER_IMAGE)" .
+# Project binaries.
+COMMANDS=docker-volume-ipfs
+BINARIES=$(addprefix bin/,$(COMMANDS))
 
-clean:
-	rm -f docker-volume-ipfs
-#       rm -f docker-volume-ipfs.1
+GO_LDFLAGS=-ldflags "-X `go list ./version`.Version=$(VERSION)"
 
-#install: install-binary
-#	install -m 644 docker-volume-ipfs.1 ${MANINSTALLDIR}/man1/
+.PHONY: clean all fmt vet lint build binaries test integration setup coverage ci check help install uninstall
+.DEFAULT: default
 
-install-binary:
-	install -d -m 0755 ${INSTALLDIR}
-	install -m 755 docker-volume-ipfs ${INSTALLDIR}
+all: check binaries test integration ## run fmt, vet, lint, build the binaries and run the tests
 
-#man:
-#	go-md2man -in man/docker-volume-ipfs.1.md -out docker-volume-ipfs.1
+check: fmt vet lint ineffassign ## run fmt, vet, lint, ineffassign
 
-shell: build-container
-	$(DOCKER_RUN_DOCKER) bash
+ci: check binaries coverage coverage-integration ## to be used by the CI
 
-test-integration: build-container
-	$(DOCKER_RUN_DOCKER) hack/make.sh test-integration
+setup: ## install dependencies
+	@echo "🐳 $@"
+	@go get -u github.com/golang/lint/golint
+	@go get -u github.com/golang/mock/mockgen
+	@go get -u github.com/gordonklaus/ineffassign
 
-validate: build-container
-	$(DOCKER_RUN_DOCKER) hack/make.sh validate-git-marks validate-gofmt validate-lint validate-vet
+# Depends on binaries because vet will silently fail if it can't load compiled
+# imports
+vet: binaries ## run go vet
+	@echo "🐳 $@"
+	@test -z "$$(go vet ${PACKAGES} 2>&1 | grep -v 'constant [0-9]* not a string in call to Errorf' | egrep -v '(timestamp_test.go|duration_test.go|exit status 1)' | tee /dev/stderr)"
+
+fmt: ## run go fmt
+	@echo "🐳 $@"
+	@test -z "$$(gofmt -s -l . | grep -v vendor/ | tee /dev/stderr)" || \
+		(echo "👹 please format Go code with 'gofmt -s -w'" && false)
+
+lint: ## run go lint
+	@echo "🐳 $@"
+	@test -z "$$(golint ./... | grep -v vendor/ | tee /dev/stderr)"
+
+ineffassign: ## run ineffassign
+	@echo "🐳 $@"
+	@test -z "$$(ineffassign . | grep -v vendor/ | tee /dev/stderr)"
+
+build: ## build the go packages
+	@echo "🐳 $@"
+	@go build -i -tags "${BUILDTAGS}" -v ${GO_LDFLAGS} ${GO_GCFLAGS} ${PACKAGES}
+
+test: ## run tests, except integration tests
+	@echo "🐳 $@"
+	@go test -parallel 8 ${RACE} -tags "${BUILDTAGS}" $(filter-out ${INTEGRATION_PACKAGE},${PACKAGES})
+
+integration: ## run integration tests
+	@echo "🐳 $@"
+	@go test -parallel 8 ${RACE} -tags "${BUILDTAGS}" ${INTEGRATION_PACKAGE}
+
+FORCE:
+
+# Build a binary from a cmd.
+bin/%: cmd/% FORCE
+	@test $$(go list) = "${PROJECT_ROOT}" || \
+		(echo "👹 Please correctly set up your Go build environment. This project must be located at <GOPATH>/src/${PROJECT_ROOT}" && false)
+	@echo "🐳 $@"
+	@go build -i -tags "${BUILDTAGS}" -o $@ ${GO_LDFLAGS}  ${GO_GCFLAGS} ./$<
+
+binaries: $(BINARIES) ## build binaries
+	@echo "🐳 $@"
+
+clean: ## clean up binaries
+	@echo "🐳 $@"
+	@rm -f $(BINARIES)
+
+coverage: ## generate coverprofiles from the unit tests
+	@echo "🐳 $@"
+	@( for pkg in $(filter-out ${INTEGRATION_PACKAGE},${PACKAGES}); do \
+		go test -i ${RACE} -tags "${BUILDTAGS}" -test.short -coverprofile="../../../$$pkg/coverage.txt" -covermode=atomic $$pkg || exit; \
+		go test ${RACE} -tags "${BUILDTAGS}" -test.short -coverprofile="../../../$$pkg/coverage.txt" -covermode=atomic $$pkg || exit; \
+	done )
+
+coverage-integration: ## generate coverprofiles from the integration tests
+	@echo "🐳 $@"
+	go test ${RACE} -tags "${BUILDTAGS}" -test.short -coverprofile="../../../${INTEGRATION_PACKAGE}/coverage.txt" -covermode=atomic ${INTEGRATION_PACKAGE}
+
+help: ## this help
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+
+install: $(BINARIES) ## install binaries
+	@echo "🐳 $@"
+	@mkdir -p $(DESTDIR)/bin
+	@install $(BINARIES) $(DESTDIR)/bin
+
+uninstall:
+	@echo "🐳 $@"
+	@rm -f $(addprefix $(DESTDIR)/bin/,$(notdir $(BINARIES)))
+
+# This only needs to be generated by hand when cutting full releases.
+version/version.go:
+	./version/version.sh > $@

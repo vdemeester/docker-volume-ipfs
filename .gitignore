@@ -1,1 +1,2 @@
-docker-volume-ipfs
+bin/
+.idea

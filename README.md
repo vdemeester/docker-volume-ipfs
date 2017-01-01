@@ -1,4 +1,4 @@
-# docker-volume-ipfs [![Build Status](https://travis-ci.org/vdemeester/docker-volume-ipfs.svg?branch=master)](https://travis-ci.org/vdemeester/docker-volume-ipfs)
+# 🐳 docker-volume-ipfs [![Build Status](https://travis-ci.org/vdemeester/docker-volume-ipfs.svg?branch=master)](https://travis-ci.org/vdemeester/docker-volume-ipfs)
 
 This is an open source volume plugin that allows using an
 [ipfs](https://ipfs.io/) filesystem as a volume.
