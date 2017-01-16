@@ -15,5 +15,7 @@ pkgs.stdenv.mkDerivation rec {
         pkgs.vndr
         pkgs.go_1_7
         pkgs.gnumake
+	pkgs.ipfs
+	pkgs.docker
     ];
 }
