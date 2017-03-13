@@ -12,10 +12,13 @@ pkgs.stdenv.mkDerivation rec {
     name = "docker-volume-ipfs-dev";
     env = pkgs.buildEnv { name = name; paths = buildInputs; };
     buildInputs = [
+	pkgs.python35
+    	pkgs.python35Packages.virtualenv
+    	pkgs.python35Packages.pip
         pkgs.vndr
         pkgs.go_1_7
         pkgs.gnumake
-	pkgs.ipfs
-	pkgs.docker
+        pkgs.ipfs
+        pkgs.docker
     ];
 }

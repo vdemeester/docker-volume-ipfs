@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+exec filewatcher \
+    -x '.git' \
+    -x '.dobi' \
+    -x '.glide' \
+    -x 'vendor' \
+    -x '**/*.swp' \
+    -x 'dist' \
+    -x 'script' \
+    -x 'docs' \
+    -- \
+bash -c 'go test -v ./${dir} || ( echo; echo; echo; echo; exit 1 )'

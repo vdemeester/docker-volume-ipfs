@@ -1,0 +1,13 @@
+FROM    golang:1.7-alpine
+
+RUN     apk add -U git bash curl tree
+RUN     git config --global http.https://gopkg.in.followRedirects true
+
+RUN     go get github.com/dnephin/filewatcher && \
+        cp /go/bin/filewatcher /usr/bin/ && \
+        rm -rf /go/src/* /go/pkg/* /go/bin/*
+
+WORKDIR /go/src/github.com/vdemeester/docker-volume-ipfs
+
+ENV     PS1="# "
+ENV CGO_ENABLED=0

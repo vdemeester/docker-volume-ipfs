@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+go build -o bin/docker-volume-ipfs ./cmd/docker-volume-ipfs

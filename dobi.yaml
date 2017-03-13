@@ -1,0 +1,52 @@
+meta:
+  project: docker-volume-ipfs
+  default: all
+
+mount=source:
+  bind: .
+  path: /go/src/github.com/vdemeester/docker-volume-ipfs
+
+mount=bin:
+  bind: ./bin/
+  path: /go/bin
+
+image=builder:
+  image: docker-volume-ipfs-dev
+  context: dockerfiles/
+  dockerfile: Dockerfile.build
+
+image=linter:
+  image: docker-volume-ipfs-linter
+  dockerfile: dockerfiles/Dockerfile.lint
+
+job=binary:
+  use: builder
+  artifact: ./bin/
+  mounts: [source, bin]
+  command: hack/binary
+  description: "Build the static binary"
+
+job=watch:
+  use: builder
+  mounts: [source]
+  command: hack/watch
+  interactive: true
+  description: "Watch for code changes and run the unit tests"
+
+job=shell:
+  use: builder
+  mounts: [source, bin]
+  interactive: true
+  provide-docker: true
+  command: bash
+  description: "Start an interactive development environment"
+
+job=test-unit:
+  use: builder
+  mounts: [source]
+  command: hack/test-unit
+
+job=lint:
+  use: linter
+  mounts: [source]
+  description: "Run style checks"
