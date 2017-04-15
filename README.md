@@ -1,4 +1,10 @@
-# 🐳 docker-volume-ipfs [![Build Status](https://travis-ci.org/vdemeester/docker-volume-ipfs.svg?branch=master)](https://travis-ci.org/vdemeester/docker-volume-ipfs)
+# 🐳 docker-volume-ipfs
+
+[![GoDoc](https://godoc.org/github.com/vdemeester/docker-volume-ipfs?status.png)](https://godoc.org/github.com/vdemeester/docker-volume-ipfs)
+[![Build Status](https://travis-ci.org/vdemeester/docker-volume-ipfs.svg?branch=master)](https://travis-ci.org/vdemeester/docker-volume-ipfs)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vdemeester/docker-volume-ipfs)](https://goreportcard.com/report/github.com/vdemeester/docker-volume-ipfs)
+[![License](https://img.shields.io/github/license/vdemeester/docker-volume-ipfs.svg)]()
+[![codecov](https://codecov.io/gh/vdemeester/docker-volume-ipfs/branch/master/graph/badge.svg)](https://codecov.io/gh/vdemeester/docker-volume-ipfs)
 
 This is an open source volume plugin that allows using an
 [ipfs](https://ipfs.io/) filesystem as a volume.
