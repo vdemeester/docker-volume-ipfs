@@ -86,10 +86,9 @@ clean: ## clean up binaries
 
 coverage: ## generate coverprofiles from the unit tests
 	@echo "🐳 $@"
-	@( for pkg in $(filter-out ${INTEGRATION_PACKAGE},${PACKAGES}); do \
-		go test -i ${RACE} -tags "${BUILDTAGS}" -test.short -coverprofile="../../../$$pkg/coverage.txt" -covermode=atomic $$pkg || exit; \
-		go test ${RACE} -tags "${BUILDTAGS}" -test.short -coverprofile="../../../$$pkg/coverage.txt" -covermode=atomic $$pkg || exit; \
-	done )
+	@for pkg in $(filter-out ${INTEGRATION_PACKAGE},${PACKAGES}); do \
+	  go test ${RACE} -tags "${BUILDTAGS}" -test.short -coverprofile="../../../$$pkg/coverage.txt" $${pkg} || exit 1; \
+	done
 
 coverage-integration: ## generate coverprofiles from the integration tests
 	@echo "🐳 $@"
