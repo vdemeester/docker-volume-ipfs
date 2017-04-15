@@ -3,19 +3,20 @@ let
 in
 { pkgs ? import (_pkgs.fetchFromGitHub { owner = "NixOS";
                                          repo = "nixpkgs-channels";
-                                         rev = "fd3d2b1a8dca6a4a90093a54cecbdb3e66f163fb";
-                                         sha256 = "06cj963b59l29vzsk4d0g89v4kjg4ycgvbgz135yyqfrnn5hlhzn";
+                                         rev = "7701cbca6b55eb9dee6e61766376dba42a8b32f2";
+                                         sha256 = "1f3rix2nkkby8qw7vsafwx0xr84mb7v0186m1hk31w2q09x2s2q8";
                                        }) {}
 }:
 
 pkgs.stdenv.mkDerivation rec {
-    name = "docker-volume-ipfs-dev";
-    env = pkgs.buildEnv { name = name; paths = buildInputs; };
-    buildInputs = [
-        pkgs.vndr
-        pkgs.go_1_7
-        pkgs.gnumake
-	pkgs.ipfs
-	pkgs.docker
-    ];
+  name = "docker-pipeline-dev";
+  env = pkgs.buildEnv { name = name; paths = buildInputs; };
+  buildInputs = [
+    pkgs.vndr
+    pkgs.docker
+    pkgs.gnumake
+    pkgs.go_1_8
+    pkgs.gcc
+    pkgs.gotools
+  ];
 }
