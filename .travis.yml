@@ -17,3 +17,4 @@ install:
 
 script:
   - make ci
+  - bash <(curl -s https://codecov.io/bash)
